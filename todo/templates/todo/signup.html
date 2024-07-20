@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>To-Do App Sign Up</title>
+    <link rel="icon" type="image/png" href="{% static "todo/images/todo-list-icon.png" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "todo/index.css" %}"/>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Sign Up</h1>
+      <div class="signup-form">
+        <form action="" method="POST"> {% csrf_token %}
+            {{form.as_p}}
+            <button class="signup-button" type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <Button class="login-button"><a href="{% url "login" %}">Login</a></Button>
+      </div>
+    </div>
+  </body>
+</html>

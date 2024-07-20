@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>To-Do App</title>
+    <link rel="icon" type="image/png" href="{% static "todo/images/todo-list-icon.png" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "todo/index.css" %}"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function() {
+          $('input[type="datetime-local"]').attr('title', 'Deadline').tooltip();
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        {% if request.user.is_authenticated %}
+          <h1>{{request.user}}'s Task List</h1>
+          <form action="{% url 'logout' %}" method="POST"> {% csrf_token %}
+            <button type="submit" class="logout-button">Log Out</button>
+          </form>
+        {% else %}
+          <h1>Task List <a class="login-button" href="{% url "login" %}">Login</a></h1>
+        {% endif %}
+      </header>
+      <form class="todo-form" method="POST" action="create/"> {% csrf_token %}
+        {{ form.as_table }}
+        <button type="submit">Add</button>
+      </form>
+      <form class="search-form" method="GET">
+        <input type="text" name="search_q" placeholder="Search" value="{{search_q}}">
+        <input type="submit" value="Search">
+        <Button type="submit" name="search_q" value="">Refresh</Button>
+      </form>
+      <ul class="todo-list">
+        {% for task in tasks %}
+          {% if task.completed %}
+            <li class="completed">
+              <div class="task-title">{{task.title}}</div>
+              <div class="task-description">{{task.description}}</div>
+              <div class="task-actions">
+                <form action="status/{{task.id}}/" method="POST"> {% csrf_token %}
+                  <button type="submit" class="restore-button">Restore</button>
+                </form>
+                <form action="delete/{{task.id}}/" method="POST"> {% csrf_token %}
+                  <button type="submit" class="delete-button">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% else %}
+            <li>
+              <div class="task-title">{{task.title}}<br><time>Deadline: {{task.remaining_time}}</time></div>
+              <div class="task-description">{{task.description}}</div>
+              <div class="task-actions">
+                <a href="update/{{task.id}}/">
+                  <button type="submit" class="complete-update-button">Update</button>
+                </a>
+                <form action="status/{{task.id}}/" method="POST"> {% csrf_token %}
+                  <button type="submit" class="complete-update-button">Complete</button>
+                </form>
+                <form action="delete/{{task.id}}/" method="POST"> {% csrf_token %}
+                  <button type="submit" class="delete-button">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+      <form action="clear/" method="POST"> {% csrf_token %}
+        <button type="submit" class="clear-button">Claer All Completed Tasks</button>
+      </form>
+    </div>
+  </body>
+
+</html>
