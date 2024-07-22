@@ -21,10 +21,7 @@
     <div class="container">
       <header>
         {% if request.user.is_authenticated %}
-          <h1>{{request.user}}'s Task List</h1>
-          <form action="{% url 'logout' %}" method="POST"> {% csrf_token %}
-            <button type="submit" class="logout-button">Log Out</button>
-          </form>
+          <h1>{{request.user|title}}'s Task List</h1>
         {% else %}
           <h1>Task List <a class="login-button" href="{% url "login" %}">Login</a></h1>
         {% endif %}
@@ -34,15 +31,16 @@
         <button type="submit">Add</button>
       </form>
       <form class="search-form" method="GET">
-        <input type="text" name="search_q" placeholder="Search" value="{{search_q}}">
+        <input type="text" name="search_q" placeholder="Search For Specific Tasks" value="{{search_q}}">
         <input type="submit" value="Search">
-        <Button type="submit" name="search_q" value="">Refresh</Button>
+        <Button type="submit" name="search_q" value="Today's Tasks">Today's Tasks</Button>
+        <Button type="submit" name="search_q" value="">All Tasks</Button>
       </form>
       <ul class="todo-list">
         {% for task in tasks %}
           {% if task.completed %}
             <li class="completed">
-              <div class="task-title">{{task.title}}</div>
+              <div class="task-title">{{task.title}} ({{task.tag}})</div>
               <div class="task-description">{{task.description}}</div>
               <div class="task-actions">
                 <form action="status/{{task.id}}/" method="POST"> {% csrf_token %}
@@ -55,7 +53,7 @@
             </li>
           {% else %}
             <li>
-              <div class="task-title">{{task.title}}<br><time>Deadline: {{task.remaining_time}}</time></div>
+              <div class="task-title">{{task.title}} {% if task.tag %}<strong>{{task.tag}}</strong>{% endif %}<br>{% if task.deadline %}<p style="font-size: 90%; margin:0;">Due <time style="font-size: 90%; color: #16a516">{{task.deadline}}</time></p><p style="font-size: 90%; margin:0;"><time style="font-size: 90%; color: red">({{task.remaining_time}})</time></p>{% endif %}</div>
               <div class="task-description">{{task.description}}</div>
               <div class="task-actions">
                 <a href="update/{{task.id}}/">
@@ -72,10 +70,17 @@
           {% endif %}
         {% endfor %}
       </ul>
+      <div style="display:flex; justify-content:space-between;">
       <form action="clear/" method="POST"> {% csrf_token %}
         <button type="submit" class="clear-button">Claer All Completed Tasks</button>
       </form>
+      <form action="{% url 'logout' %}" method="POST"> {% csrf_token %}
+        <button type="submit" class="logout-button">Log Out</button>
+      </form>
+      </div>
+        {% for task in next_24_hours_tasks %}
+        {{task}}
+        {% endfor %}
     </div>
   </body>
-
 </html>

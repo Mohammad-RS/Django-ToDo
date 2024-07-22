@@ -8,6 +8,8 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+from django.utils import timezone
+import datetime
 
 from .models import Task
 from .forms import TaskForm
@@ -19,7 +21,6 @@ class CustomLoginView(LoginView):
     
     def get_success_url(self) -> str:
         return reverse_lazy('task-list')
-
 
 class RegisterView(FormView):
     template_name = 'todo/signup.html'
@@ -37,7 +38,6 @@ class RegisterView(FormView):
         if self.request.user.is_authenticated:
             return redirect(reverse_lazy('task-list'))  
         return super().get(*args, **kwargs)
-    
     
 class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
@@ -60,16 +60,16 @@ class TaskListView(LoginRequiredMixin, ListView):
         context["form"] = TaskForm
         context['tasks'] = context['tasks'].filter(user=self.request.user)
         search_q = self.request.GET.get('search_q', '')
-        if search_q:
-            context['tasks'] = context['tasks'].filter(Q(title__icontains=search_q) | Q(description__icontains=search_q))
+        if search_q == "Today's Tasks":
+            context["tasks"] = Task.objects.filter(deadline__gte=timezone.now(), deadline__lte=timezone.now() + datetime.timedelta(hours=24))
+        elif search_q:
+            context['tasks'] = context['tasks'].filter(Q(title__icontains=search_q) | Q(description__icontains=search_q) | Q(tag__icontains=search_q)).order_by('deadline')
         context['search_q'] = search_q
         return context
-
 
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     success_url = reverse_lazy('task-list')
-    
     
 class TaskStatusView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -79,17 +79,13 @@ class TaskStatusView(LoginRequiredMixin, View):
         obj.save()
         return redirect(reverse_lazy('task-list'))  
         
-        
 class TaskClearView(LoginRequiredMixin, View):
     def post(self, request):
         Task.objects.filter(completed=True).delete()
         return redirect(reverse_lazy('task-list'))  
-
 
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     form_class = TaskForm
     template_name = 'todo/task-update.html'
     success_url = reverse_lazy('task-list')
-    
-    

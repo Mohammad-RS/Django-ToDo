@@ -11,6 +11,7 @@ class Task(models.Model):
     completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(null=True, blank=True)
+    tag = models.CharField(max_length=25, null=True, blank=True)
     
     def remaining_time(self):
         try:
