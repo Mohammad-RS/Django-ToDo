@@ -1,3 +1,0 @@
-Add Reminders/Notifications for tasks close to their deadline
-
-Enhance the authentication system
